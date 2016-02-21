@@ -1,12 +1,13 @@
 <div class="ticTacToe">
-  <h2 ng-hide="gameOver==='tie'"><span>{{currentPlayer}}</span> moves next</h2>
+  <h2 class="text-center" ng-show="gameOver===undefined"><span class="text-uppercase">{{currentPlayer}}</span> moves next</h2>
+  <h2 class="text-center" ng-show="gameOver==='win'">Player <span class="text-uppercase">{{currentPlayer}}</span> wins!</h2>
+  <h2 class="text-center" ng-show="gameOver==='tie'">Tie Game</h2>
+  <h4 class="text-center" ng-show="errorMsg">{{errorMsg}}</h4>
   <div id="board">
     <div class="square" ng-class="squareClass($index)" data-index={{$index}}
          ng-repeat="square in boardSquares track by $index"
           ng-click="squareClick($index)">{{$index}}</div>
   </div>
-  <h3 class="text-center" ng-show="gameOver==='win'">Player {{currentPlayer}} wins!</h3>
-  <h3 class="text-center" ng-show="gameOver==='tie'">Tie Game</h3>
   <button class="btn-danger" ng-click="resetBoard()">Reset board</button>
 
 </div>

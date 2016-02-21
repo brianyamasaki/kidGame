@@ -1,5 +1,4 @@
 h2 {
-    text-align: center;
     margin-bottom: 1em;
 }
 
@@ -25,6 +24,9 @@ button
     float:left;
     text-align: center;
     color:#cccccc;
+}
+.square:hover {
+    background-color: #bbffbb;
 }
 .square[data-index="1"],
 .square[data-index="4"],

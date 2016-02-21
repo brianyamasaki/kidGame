@@ -8,6 +8,7 @@ angular.module('myApp.ticTacToeDirective', ['ngRoute'])
       undefined, undefined, undefined,
       undefined, undefined, undefined
     ];
+
     return {
       restrict: 'E',
       templateUrl: 'ticTacToe/ticTacToe-directive.html',
@@ -15,6 +16,7 @@ angular.module('myApp.ticTacToeDirective', ['ngRoute'])
       link: function(scope, el, attrs) {
         var i;
 
+        // Call this to swap from player X to player O
         scope.swapCurrentPlayer = function () {
           if (scope.currentPlayer === 'x') {
             scope.currentPlayer = 'o';
@@ -23,28 +25,43 @@ angular.module('myApp.ticTacToeDirective', ['ngRoute'])
           }
         };
 
+        // This function allows displaying of boardSquare content onto the TicTacToe board on the main page.
+        // It is called by the Angular through ng-click="squareClass($index)" in the template HTML
         scope.squareClass = function(index){
           return (scope.boardSquares[index]);
         };
 
+        // Function is called when user clicks on a board square
+        // index will be a value from 0 to 8
         scope.squareClick = function(index) {
+          if (scope.gameOver !== undefined) {
+            return;
+          }
+          if (scope.boardSquares[index] !== undefined) {
+            scope.errorMsg = 'Cannot Click on this square';
+            return;
+          } else {
+            scope.errorMsg = undefined;
+          }
           scope.boardSquares[index] = scope.currentPlayer;
           if (scope.checkForWin()) {
-
+            scope.gameOver = 'win';
           } else if (scope.checkForTie()) {
-
+            scope.gameOver = 'tie';
           } else
           {
             scope.swapCurrentPlayer();
           }
         };
 
+        // This function initializes the board for a new game
         scope.resetBoard = function() {
           scope.boardSquares = angular.copy(initSquares);
           scope.currentPlayer = 'x';
           scope.gameOver = undefined;
         };
 
+        // This function returns true if the current player has won the game
         scope.checkForWin = function() {
           var board = scope.boardSquares,
             player = scope.currentPlayer;
@@ -59,12 +76,12 @@ angular.module('myApp.ticTacToeDirective', ['ngRoute'])
             (board[2] === player && board[5] === player && board[8] === player) ||
             (board[0] === player && board[4] === player && board[8] === player) ||
             (board[2] === player && board[4] === player && board[6] === player)) {
-            scope.gameOver = 'win';
             return true;
           }
           return false;
         };
 
+        // This function returns true if all squares have been chosen
         scope.checkForTie = function() {
           var board = scope.boardSquares,
             i,
@@ -72,13 +89,13 @@ angular.module('myApp.ticTacToeDirective', ['ngRoute'])
 
           for (i = 0; i < 9; i++) {
             if (board[i] === undefined) {
-              return;
+              return false;
             }
           }
-          scope.gameOver = 'tie';
+          return true;
         }
 
-        // initialize board
+        // initialize board now
         scope.resetBoard();
       }
     };
