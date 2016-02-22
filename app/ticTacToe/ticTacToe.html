@@ -1,13 +1,45 @@
 <h1 class="text-center">TicTacToe</h1>
 <tic-tac-toe></tic-tac-toe>
-<h2>Instructions</h2>
+<h2>Try the game</h2>
 <ul>
-  <li>This game of Tic Tac Toe is created in the ticTacToe directory</li>
-  <li>The game logic is in ticTacToe-directive.js and the game HTML template is in ticTacToe-directive.html.</li>
-  <li>The value of each square of the board is represented by array items within <code>scope.boardValues</code>.
-    While JavaScript array items will accept all kinds of values, the only values that actually work are
-    <code>'x'</code>, <code>'y'</code>, and the special value <code>undefined</code>.
-    Note that the board is initialized to be full of <code>undefined</code> values by copying from <code>initSquares</code>.</li>
-  <li>The little number on each tic tac toe square is only there to help the coder to remember which item in the array
-    represents which square on the board.</li>
+  <li>Clicking on a square immediately marks it with the current player's symbol.</li>
+  <li>Changing a square from one player's symbol to another player's symbol is not disabled yet.</li>
+  <li>Knowing when a player has won is not done yet.</li>
+  <li>Indicating when the game is not winnable is not done yet.</li>
 </ul>
+<div class="col-md-6">
+  <h2>Description of the Code</h2>
+  <ul>
+    <li>This game of Tic Tac Toe is created in the ticTacToe directory</li>
+    <li>The game logic is in ticTacToe-directive.js and the game HTML template is in ticTacToe-directive.html.</li>
+    <li>The value of each square of the board is represented by array items within <code>scope.boardValues</code>.
+      While JavaScript array items will accept all kinds of values, the only values that actually work are
+      <code>'x'</code>, <code>'y'</code>, and the special value <code>undefined</code>.
+      Note that the board is initialized to be full of <code>undefined</code> values by copying from <code>initSquares</code>.</li>
+    <li><strong>Note:</strong> The little number displayed on each tic tac toe square of the game itself is only there to help the coder to remember which item in the array
+      represents which square on the board.</li>
+    <li><code>scope.currentPlayer</code> holds the value of the current player, always either <code>'x'</code> or <code>'o'</code>.</li>
+    <li>When the user clicks on a square, the function <code>scope.squareClick</code> gets called with an index parameter from 0 to 8.
+      To mark that square for the current player do <code>scope.boardSquares[index] = scope.currentPlayer</code>.
+      As an example, clicking on the top left square will call scope.squareClick with index equal to 0.
+      If the current player is 'x', the correct way to display the board properly is to set <code>scope.boardSquares[0] = 'x'</code>.</li>
+  </ul>
+
+</div>
+<div class="col-md-6">
+  <h2>Exercises</h2>
+  <ol>
+    <li>Change the <code>scope.resetBoard</code> function to start with player 'o' instead of player 'x'.</li>
+    <li>Disallow clicking on a square that is already marked by changing code in <code>scope.squareClick</code>. You'll want to check immediately whether it's already marked.
+      Give an error message by setting <code>scope.errorMsg = 'Cannot Click on this square'</code>, then <code>return false</code> before any other code is executed.
+      If clicking on the square is allowed, be sure to set <code>scope.errorMsg = undefined</code> before continuing to execute the code.</li>
+    <li>Finish the function <code>scope.checkForTie</code> by detecting for any squares that are <code>undefined</code>.
+      Note that if you find <strong>any</strong> <code>undefined</code> array items, you can <code>return false</code> immediately.
+      Otherwise, if you can't find any <code>undefined</code> array items, you should <code>return true</code>.</li>
+    <li>Finish the function <code>scope.checkForWin</code> by checking whether any three in a row matches for the current player.
+      There are eight possible ways to win - three across, three down and two diagonal. If any three in a row matches the current player,
+      the function should <code>return true</code>. Otherwise <code>return false</code>. The simplest way to do check is to compare
+      the array items with <code>scope.currentPlayer</code> such that three in a row are actually the same.
+    </li>
+  </ol>
+</div>
