@@ -4,7 +4,9 @@
 angular.module('myApp', [
   'ngRoute',
   'myApp.home',
-  'myApp.ticTacToe'
+  'myApp.ticTacToe',
+  'myApp.cardDeckService',
+  'myApp.war'
 ]).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/home'});

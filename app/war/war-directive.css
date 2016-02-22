@@ -1,0 +1,30 @@
+.card-back {
+    height: 200px;
+    width: 120px;
+    border-radius:1em;
+    border:1px solid black;
+    margin:.5em auto;
+    display:inline-block;
+    background-color: #31708f;
+}
+
+.card-back.empty {
+    border:1px dashed #cccccc;
+    background-color: white;
+}
+
+.card-front {
+    height: 200px;
+    width: 120px;
+    font-size:1.5em;
+    padding:.75em;
+    border-radius: 1em;
+    border:1px solid black;
+    margin:.5em auto;
+    display: inline-block;
+}
+
+.score {
+    font-size:3em;
+    margin:1em .5em;
+}

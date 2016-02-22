@@ -1,0 +1,22 @@
+<div>
+
+  <div class="text-center ">
+    <button class="btn btn-primary" ng-click="recycleCards()">Shuffle</button>
+    <button class="btn btn-primary" ng-show="left.hand.length > 0 && right.hand.length > 0" ng-click="playCards()">Play Card</button>
+  </div>
+
+  <div class="col-xs-3">
+    <span class="card-back" ng-class="{empty: leftHandCount()===0}"></span>
+  </div>
+  <div class="col-xs-6 text-center">
+    <span class="card-front">{{leftDiscardTop().faceChar}}</span>
+    <span class="card-front">{{rightDiscardTop().faceChar}}</span>
+    <div>
+      <span class="score">{{left.points}}</span>
+      <span class="score">{{right.points}}</span>
+    </div>
+  </div>
+  <div class="col-xs-3 text-right">
+    <span class="card-back" ng-class="{empty: rightHandCount()===0}"></span>
+  </div>
+</div>
