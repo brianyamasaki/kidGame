@@ -21,16 +21,18 @@ angular.module('myApp.war', ['ngRoute'])
       templateUrl: 'war/war-directive.html',
       link: function(scope, el, attrs) {
         var playerScore = {
-          hand:[],
-          discard: [],
-          storage: [],
-          points: 0
-        };
-        CardDeckService.shuffle(1);
+            hand:[],
+            discard: [],
+            storage: [],
+            points: 0
+          },
+          cDecks = 1;
+
+        CardDeckService.shuffle(cDecks);
         scope.left = angular.copy(playerScore);
         scope.right = angular.copy(playerScore);
-        scope.left.hand = CardDeckService.getCards(26);
-        scope.right.hand = CardDeckService.getCards(26);
+        scope.left.hand = CardDeckService.getCards(cDecks * 26);
+        scope.right.hand = CardDeckService.getCards(cDecks * 26);
 
         scope.recycleCards = function () {
           var count;
@@ -88,6 +90,10 @@ angular.module('myApp.war', ['ngRoute'])
 
         scope.rightHandCount = function() {
           return scope.right.hand.length;
+        };
+
+        scope.suitIconClass = function (suit) {
+          return 'suit-' + suit;
         };
 
         scope.playCards();

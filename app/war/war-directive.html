@@ -9,8 +9,14 @@
     <span class="card-back" ng-class="{empty: leftHandCount()===0}"></span>
   </div>
   <div class="col-xs-6 text-center">
-    <span class="card-front">{{leftDiscardTop().faceChar}}</span>
-    <span class="card-front">{{rightDiscardTop().faceChar}}</span>
+    <span class="card-front">
+      <span class="face-char">{{leftDiscardTop().faceChar}}</span>
+      <span class="suit-icon" ng-class="suitIconClass(leftDiscardTop().suit)"></span>
+    </span>
+    <span class="card-front">
+      <span class="face-char">{{rightDiscardTop().faceChar}}</span>
+      <span class="suit-icon" ng-class="suitIconClass(rightDiscardTop().suit)"></span>
+    </span>
     <div>
       <span class="score">{{left.points}}</span>
       <span class="score">{{right.points}}</span>
