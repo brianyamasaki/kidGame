@@ -20,7 +20,8 @@ angular.module('myApp.cardDeckService', [])
       suit: suits[isuit],
       color: colors[isuit],
       cardIndex: index,
-      value: cardValue + 1,
+      value: cardValue + 1, // 1 for Ace, 2 for 2, 11 for Jack, 12 for Queen, 13 for King, etc.
+      valueAceHigh: cardValue === 0 ? 13 : cardValue, // 1 for 2, 11 for Queen, 12 for King, 13 for Ace, etc.
       faceChar: faceChars[cardValue],
       rank: rank[cardValue],
       ideck: ideck

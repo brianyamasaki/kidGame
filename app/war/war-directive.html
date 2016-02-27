@@ -1,22 +1,21 @@
-<div>
+<div class="clearfix">
 
   <div class="text-center button-area">
-    <button class="btn btn-primary" ng-click="recycleCards()">Shuffle</button>
-    <button class="btn btn-primary" ng-show="left.hand.length > 0 && right.hand.length > 0" ng-click="playCards()">Play Card</button>
+    <button class="btn btn-primary" ng-click="startGame()">Restart</button>
+    <button class="btn btn-primary" ng-disabled="!!winMessage" ng-click="playCards()">Play Card</button>
   </div>
 
+  <p ng-show="winMessage">{{winMessage}}</p>
   <div class="col-xs-3">
-    <span class="playing-card card-back" ng-class="cardBackClass('left')" />
+    <div class="playing-card card-back" ng-class="cardBackClass('left')" />
+    <div class="score text-center">{{handCount('left')}}</div>
   </div>
   <div class="col-xs-6 text-center">
     <span class="playing-card" rank="{{leftDiscardTop().rank}}" suit="{{leftDiscardTop().suit}}" />
     <span class="playing-card" rank="{{rightDiscardTop().rank}}" suit="{{rightDiscardTop().suit}}" />
-    <div class="score-area">
-      <span class="score">{{left.points}}</span>
-      <span class="score">{{right.points}}</span>
-    </div>
   </div>
   <div class="col-xs-3 text-right">
-    <span class="playing-card card-back" ng-class="cardBackClass('right')" />
+    <div class="playing-card card-back" ng-class="cardBackClass('right')" />
+    <div class="score text-center">{{handCount('right')}}</div>
   </div>
 </div>
