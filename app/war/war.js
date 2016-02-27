@@ -84,12 +84,13 @@ angular.module('myApp.war', ['ngRoute'])
           return scope.right.discard[0];
         };
 
-        scope.leftHandCount = function() {
-          return scope.left.hand.length;
-        };
-
-        scope.rightHandCount = function() {
-          return scope.right.hand.length;
+        scope.cardBackClass = function(deck) {
+          var hand = deck==='left' ? scope.left.hand : scope.right.hand;
+          if (hand.length > 0) {
+            return 'card-back';
+          } else {
+            return 'empty';
+          }
         };
 
         scope.suitIconClass = function (suit) {

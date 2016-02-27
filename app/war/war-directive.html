@@ -1,28 +1,22 @@
 <div>
 
-  <div class="text-center ">
+  <div class="text-center button-area">
     <button class="btn btn-primary" ng-click="recycleCards()">Shuffle</button>
     <button class="btn btn-primary" ng-show="left.hand.length > 0 && right.hand.length > 0" ng-click="playCards()">Play Card</button>
   </div>
 
   <div class="col-xs-3">
-    <span class="card-back" ng-class="{empty: leftHandCount()===0}"></span>
+    <span class="playing-card card-back" ng-class="cardBackClass('left')" />
   </div>
   <div class="col-xs-6 text-center">
-    <span class="card-front">
-      <span class="face-char">{{leftDiscardTop().faceChar}}</span>
-      <span class="suit-icon" ng-class="suitIconClass(leftDiscardTop().suit)"></span>
-    </span>
-    <span class="card-front">
-      <span class="face-char">{{rightDiscardTop().faceChar}}</span>
-      <span class="suit-icon" ng-class="suitIconClass(rightDiscardTop().suit)"></span>
-    </span>
-    <div>
+    <span class="playing-card" rank="{{leftDiscardTop().rank}}" suit="{{leftDiscardTop().suit}}" />
+    <span class="playing-card" rank="{{rightDiscardTop().rank}}" suit="{{rightDiscardTop().suit}}" />
+    <div class="score-area">
       <span class="score">{{left.points}}</span>
       <span class="score">{{right.points}}</span>
     </div>
   </div>
   <div class="col-xs-3 text-right">
-    <span class="card-back" ng-class="{empty: rightHandCount()===0}"></span>
+    <span class="playing-card card-back" ng-class="cardBackClass('right')" />
   </div>
 </div>

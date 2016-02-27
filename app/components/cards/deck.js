@@ -5,6 +5,7 @@ angular.module('myApp.cardDeckService', [])
 .factory('CardDeckService', [function() {
   var deck = [],
     faceChars = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'],
+    rank = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king'],
     suits = ['spade', 'heart', 'club', 'diamond'],
     colors = ['black', 'red', 'black', 'red'],
     i,
@@ -21,6 +22,7 @@ angular.module('myApp.cardDeckService', [])
       cardIndex: index,
       value: cardValue + 1,
       faceChar: faceChars[cardValue],
+      rank: rank[cardValue],
       ideck: ideck
     };
   }

@@ -1,60 +1,75 @@
 /* app css stylesheet */
 
-.card-back {
-  height: 200px;
-  width: 120px;
-  border-radius:1em;
+.playing-card {
   border:1px solid black;
-  margin:.5em auto;
-  display:inline-block;
-  background-color: #31708f;
-}
-
-.card-back.empty {
-  border:1px dashed #cccccc;
-  background-color: white;
-}
-
-.card-front {
-  height: 200px;
-  width: 120px;
-  border-radius: 1em;
-  border:1px solid black;
-  margin:.5em auto;
-  display: inline-block;
-  position: relative;
-}
-
-.card-front .face-char {
-  position: absolute;
-  top:10px;
-  left:15px;
-  font-size:1.5em;
-}
-
-.suit-icon {
-  position:absolute;
-  top:38%;
-  left:35%;
-  height:50px;
-  width:50px;
-  background-size:100px;
+  border-radius:8px;
+  height:200px;
+  width:145px;
   background-repeat: no-repeat;
-  background-image: url('img/suits.png');
+  background-size: 2200px;
+  display:inline-block;
+}
+.playing-card[suit="spade"] {
+  background-image:url("img/spades.jpg");
+}
+.playing-card[suit="heart"] {
+  background-image:url("img/hearts.jpg");
+}
+.playing-card[suit="diamond"] {
+  background-image:url("img/diamonds.jpg");
+}
+.playing-card[suit="club"] {
+  background-image:url("img/clubs.jpg");
+}
+.playing-card[rank="ace"] {
+  background-position: left center;
+}
+.playing-card[rank="two"] {
+  background-position: -169px center;
+}
+.playing-card[rank="three"] {
+  background-position: -338px center;
+}
+.playing-card[rank="four"] {
+  background-position: -507px center;
+}
+.playing-card[rank="five"] {
+  background-position: -676px center;
+}
+.playing-card[rank="six"] {
+  background-position: -845px center;
+}
+.playing-card[rank="seven"] {
+  background-position: -1014px center;
+}
+.playing-card[rank="eight"] {
+  background-position: -1183px center;
+}
+.playing-card[rank="nine"] {
+  background-position: -1351px center;
+}
+.playing-card[rank="ten"] {
+  background-position: -1520px center;
+}
+.playing-card[rank="jack"] {
+  background-position: -1689px center;
+}
+.playing-card[rank="queen"] {
+  background-position: -1857px center;
+}
+.playing-card[rank="king"] {
+  background-position: -2026px center;
 }
 
-.suit-diamond {
-  background-position: left bottom;
+.playing-card[rank="joker"] {
+  background-image:url("img/jokers.jpg");
+  background-position: left center;
 }
 
-.suit-heart {
-  background-position: right top;
+.playing-card.empty {
+  background-color: white;
+  border: 1px dashed black;
 }
-
-.suit-spade {
-  background-position: right bottom;
-}
-
-.suit-club {
-  background-position: left top;
+.playing-card.card-back {
+  background-color: green;
 }
