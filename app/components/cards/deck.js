@@ -97,6 +97,12 @@ angular.module('myApp.cardDeckService', [])
       }
       return deck.splice(0, count);
     },
+    getRemainingCards: function() {
+      return deck.splice(0, deck.length);
+    },
+    cardsRemaining: function() {
+      return deck.length;
+    },
     recycleCards: function(cards) {
       var i,
         count = cards.length;

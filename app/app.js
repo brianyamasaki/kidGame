@@ -6,7 +6,8 @@ angular.module('myApp', [
   'myApp.home',
   'myApp.ticTacToe',
   'myApp.cardDeckService',
-  'myApp.war'
+  'myApp.war',
+  'myApp.klondike'
 ]).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/home'});

@@ -1,0 +1,91 @@
+/* resize cards for kondike */
+.klondike .playing-card {
+    border-radius:6px;
+    height:120px;
+    width:90px;
+    background-size: 1500%;
+}
+.klondike {
+    min-width:655px;
+}
+
+.klondike .decks {
+    height: 130px;
+}
+
+.klondike .decks div {
+    display:inline-block;
+}
+
+.klondike .stock {
+    border: 1px dotted red;
+    min-width:190px;
+    height: 100%;
+    padding: 5px;
+    float:left;
+}
+.klondike .foundation-area {
+    border: 1px dotted blue;
+    padding:5px;
+    min-width: 380px;
+    height: 100%;
+    float:right;
+}
+
+.klondike .foundation {
+    margin: 2px;
+}
+
+.klondike .tableau-area {
+    border: 1px dotted black;
+    height:400px;
+}
+
+.klondike .tableau {
+    display:inline-block;
+    margin: 2px;
+    position: relative;
+    width: 95px;
+}
+
+.tableau .playing-card {
+    position:absolute;
+    top:0;
+    left:0;
+}
+.tableau .playing-card:nth-of-type(2) {
+    top:20px;
+}
+.tableau .playing-card:nth-of-type(3) {
+    top:40px;
+}
+.tableau .playing-card:nth-of-type(4) {
+    top:60px;
+}
+.tableau .playing-card:nth-of-type(5) {
+    top:80px;
+}
+.tableau .playing-card:nth-of-type(6) {
+    top:100px;
+}
+.tableau .playing-card:nth-of-type(7) {
+    top:120px;
+}
+.tableau .playing-card:nth-of-type(8) {
+    top:140px;
+}
+.tableau .playing-card:nth-of-type(9) {
+    top:160px;
+}
+.tableau .playing-card:nth-of-type(10) {
+    top:180px;
+}
+.tableau .playing-card:nth-of-type(11) {
+    top:2000px;
+}
+.tableau .playing-card:nth-of-type(12) {
+    top:220px;
+}
+.tableau .playing-card:nth-of-type(13) {
+    top:240px;
+}

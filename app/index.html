@@ -10,9 +10,11 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="components/cards/cards.css">
   <link rel="stylesheet" href="app.css">
   <link rel="stylesheet" href="ticTacToe/ticTacToe.css">
   <link rel="stylesheet" href="war/war-directive.css">
+  <link rel="stylesheet" href="klondike/klondike.css">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 <body>
@@ -31,7 +33,15 @@
       <ul class="nav navbar-nav">
         <li active-nav><a href="#/home">Home</a></li>
         <li active-nav><a href="#/ticTacToe">TicTacToe</a></li>
-        <li active-nav><a href="#/war">War</a></li>
+        <li active-nav class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">Card Games <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li active-nav><a href="#/war">War</a></li>
+            <li active-nav><a href="#/klondike">Solitaire (Klondike)</a></li>
+          </ul>
+
+        </li>
       </ul>
     </div><!--/.nav-collapse -->
   </div>
@@ -57,5 +67,6 @@
   <script src="ticTacToe/ticTacToe.js"></script>
   <script src="war/war.js"></script>
   <script src="components/cards/deck.js"></script>
+  <script src="klondike/klondike.js"></script>
 </body>
 </html>

@@ -1,0 +1,74 @@
+.playing-card {
+    border:1px solid black;
+    border-radius:8px;
+    height:200px;
+    width:145px;
+    background-repeat: no-repeat;
+    background-size: 2200px;
+    display:inline-block;
+}
+.playing-card[suit="spade"] {
+    background-image:url("img/spades.jpg");
+}
+.playing-card[suit="heart"] {
+    background-image:url("img/hearts.jpg");
+}
+.playing-card[suit="diamond"] {
+    background-image:url("img/diamonds.jpg");
+}
+.playing-card[suit="club"] {
+    background-image:url("img/clubs.jpg");
+}
+.playing-card[rank="ace"] {
+    background-position: left center;
+}
+.playing-card[rank="two"] {
+    background-position: 8.2% center;
+}
+.playing-card[rank="three"] {
+    background-position: 16.4% center;
+}
+.playing-card[rank="four"] {
+    background-position: 24.6% center;
+}
+.playing-card[rank="five"] {
+    background-position: 32.8% center;
+}
+.playing-card[rank="six"] {
+    background-position: 41% center;
+}
+.playing-card[rank="seven"] {
+    background-position: 49.2% center;
+}
+.playing-card[rank="eight"] {
+    background-position: 57.4% center;
+}
+.playing-card[rank="nine"] {
+    background-position: 65.6% center;
+}
+.playing-card[rank="ten"] {
+    background-position: 73.8% center;
+}
+.playing-card[rank="jack"] {
+    background-position: 82% center;
+}
+.playing-card[rank="queen"] {
+    background-position: 90.2% center;
+}
+.playing-card[rank="king"] {
+    background-position: 98.45% center;
+}
+
+.playing-card[rank="joker"] {
+    background-image:url("img/jokers.jpg");
+    background-position: left center;
+}
+
+.playing-card.empty {
+    background-image:none;
+    background-color: white;
+    border: 1px dashed black;
+}
+.playing-card.card-back {
+    background-color: green;
+}
