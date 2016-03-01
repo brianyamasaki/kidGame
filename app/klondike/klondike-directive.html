@@ -2,22 +2,27 @@
   <div class="decks">
     <div class="stock">
       <div class="hand">
-        <span class="playing-card" ng-class="cardClass('hand', 0)" ></span>
+        <span class="playing-card" ng-class="cardClass('hand', -1)" ng-click="onClickHand()" card-index="{{cardIndex('hand', -1)}}"></span>
       </div>
       <div class="discard">
-        <span class="playing-card" ng-class="cardClass('discard', 0)"></span>
+        <span class="playing-card" ng-class="cardClass('discard', -1)" draggable={{draggableDiscard()}}
+              suit="{{cardSuitDiscardTop()}}" rank="{{cardRankDiscardTop()}}" card-index="{{cardIndex('discard', -1)}}"></span>
       </div>
     </div>
     <div class="foundation-area">
-      <div class="foundation" ng-repeat="stack in klondike.foundations track by $index">
-        <span class="playing-card"  ng-class="cardClass('foundations', $index, 0)"></span>
+      <div class="foundation" ng-repeat="stack in klondike.foundations track by $index" index="{{$index}}">
+        <span class="playing-card"  ng-class="cardClass('foundations', $index, 0)" draggable="true"
+              suit="{{cardSuitFoundationTop($index)}}" rank="{{cardRankFoundationTop($index)}}" card-index="{{cardIndex('foundations', $index, 0)}}"></span>
       </div>
     </div>
   </div>
   <div class="tableau-area">
-    <div class="tableau" ng-repeat="stack in klondike.tableaus track by $index">
-      <span class="playing-card" ng-class="cardClass('tableaus', $parent.$index, $index)" ng-repeat="card in stack"
-            suit="{{cardSuitTableau($parent.$index, $index)}}" rank="{{cardRankTableau($parent.$index, $index)}}"}></span>
+    <div class="tableau" ng-repeat="stack in klondike.tableaus track by $index" index="{{$index}}">
+      <span class="playing-card" ng-class="cardClass('tableaus', $parent.$index, $index)" ng-repeat="card in stack.cards"
+            suit="{{cardSuitTableau($parent.$index, $index)}}"
+            rank="{{cardRankTableau($parent.$index, $index)}}"
+            card-index="{{cardIndex('tableaus', $parent.$index, $index)}}"
+            draggable="{{draggableTableau($parent.$index, $index)}}"></span>
     </div>
 
   </div>

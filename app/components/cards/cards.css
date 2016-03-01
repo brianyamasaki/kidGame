@@ -5,6 +5,7 @@
     width:145px;
     background-repeat: no-repeat;
     background-size: 2200px;
+    background-color:white;
     display:inline-block;
 }
 .playing-card[suit="spade"] {
@@ -19,6 +20,11 @@
 .playing-card[suit="club"] {
     background-image:url("img/clubs.jpg");
 }
+.playing-card[suit="back"],
+.playing-card.card-back {
+    background: green;
+}
+.playing-card[rank="back"],
 .playing-card[rank="ace"] {
     background-position: left center;
 }
@@ -63,12 +69,10 @@
     background-image:url("img/jokers.jpg");
     background-position: left center;
 }
-
+.playing-card[rank="empty"],
+.playing-card[suit="empty"],
 .playing-card.empty {
     background-image:none;
     background-color: white;
     border: 1px dashed black;
-}
-.playing-card.card-back {
-    background-color: green;
 }
