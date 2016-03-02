@@ -70,6 +70,10 @@ angular.module('myApp.klondike', ['ngRoute'])
       templateUrl: 'klondike/klondike-directive.html',
       link: function (scope, el, attrs) {
 
+        scope.showAllCards = false;
+        scope.clickShowAllCards = function () {
+          //scope.$apply();
+        };
 
         function cardStack (str) {
           return scope.klondike[str];
@@ -111,7 +115,7 @@ angular.module('myApp.klondike', ['ngRoute'])
 
           if (card === undefined) {
             return 'empty';
-          } else if (!card.faceUp) {
+          } else if (!card.faceUp && !scope.showAllCards) {
             return 'card-back';
           }
         };
@@ -124,7 +128,7 @@ angular.module('myApp.klondike', ['ngRoute'])
         scope.cardSuitTableau = function(itab, icard) {
           var card = cardFromTableau(itab, icard);
 
-          if (card.faceUp) {
+          if (card.faceUp || scope.showAllCards) {
             return card.suit;
           } else {
             return 'back';
@@ -134,7 +138,7 @@ angular.module('myApp.klondike', ['ngRoute'])
         scope.cardRankTableau = function(itab, icard) {
           var card = cardFromTableau(itab, icard);
 
-          if (card.faceUp) {
+          if (card.faceUp || scope.showAllCards) {
             return card.rank;
           } else {
             return 'back';
@@ -258,8 +262,41 @@ angular.module('myApp.klondike', ['ngRoute'])
             return 'foundations';
           } else if (strClass.indexOf('tableau') !== -1) {
             return 'tableaus';
-          } else {
+          } else if (strClass.indexOf('discard') !== -1 ){
             return 'discard';
+          }
+        }
+
+        function dropTargetInfo($target) {
+          var $stack,
+            stackType,
+            stack,
+            index,
+            strTargetClasses = $target.attr('class');
+
+          stackType = getStrStackFromClasses(strTargetClasses);
+          if (stackType) {
+            $stack = $target;
+            if (isStackArray[stackType]) {
+              index = $stack.attr('index');
+              stack = cardStack(stackType)[index];
+            } else {
+              stack = cardStack(stackType);
+            }
+          } else if (strTargetClasses.indexOf('playing-card') !== -1) {
+            $stack = $target.parent();
+            stackType = getStrStackFromClasses($stack.attr('class'));
+            if (isStackArray[stackType]) {
+              index = $stack.attr('index');
+              stack = cardStack(stackType)[index];
+            } else {
+              stack = cardStack(stackType);
+            }
+          }
+          return {
+            stack: stack,
+            $stack: $stack,
+            stackType: stackType
           }
         }
 
@@ -288,27 +325,39 @@ angular.module('myApp.klondike', ['ngRoute'])
         }
 
         function onDragEnter(e) {
-          $(e.target).addClass(dragOverClassname);
-          console.log('onDragEnter ' + $(e.target).attr('class'));
+          var $target = $(e.target),
+            targetInfo;
+
+          targetInfo = dropTargetInfo($target);
+          if (targetInfo.stack && targetInfo.stack.droppable) {
+            targetInfo.$stack.addClass(dragOverClassname);
+            //console.log('onDragEnter ' + targetInfo.stackType);
+          }
         }
 
         function onDragLeave(e) {
-          $(e.target).removeClass(dragOverClassname);
-          console.log('onDragLeave ' + $(e.target).attr('class'));
+          var $target = $(e.target),
+            targetInfo;
+
+          targetInfo = dropTargetInfo($target);
+          if (targetInfo.stack && targetInfo.stack.droppable) {
+            targetInfo.$stack.removeClass(dragOverClassname);
+            //console.log('onDragLeave ' + targetInfo.stackType);
+          }
         }
 
         function onDrop(e) {
           var dataTransfer = e.originalEvent.dataTransfer,
-            $target = $(e.target).parent();
+            $target = $(e.target),
+            targetInfo;
           if (e.stopPropagation()) {
             e.stopPropagation();
           }
-          if ($target.attr('class').indexOf('tableau') !== -1) {
-            dropStack = scope.klondike.tableaus[$target.attr('index')];
-          } else {
-            dropStack = scope.klondike.foundations[$target.attr('index')];
+          targetInfo = dropTargetInfo($target);
+          if (targetInfo.$stack) {
+            dropStack = targetInfo.stack;
+            //console.log('onDrop ' + targetInfo.stackType);
           }
-          //console.log('onDrop: card  ' + dataTransfer.getData('application/text'));
           return false;
         }
 

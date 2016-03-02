@@ -1,4 +1,5 @@
 <div class="klondike">
+  <p><input id="show-all-cards" type="checkbox" ng-model="showAllCards" ng-click="clickShowAllCards()"><label for="show-all-cards">Show Tableau Cards</label></p>
   <div class="decks">
     <div class="stock">
       <div class="hand">
@@ -12,7 +13,7 @@
     <div class="foundation-area">
       <div class="foundation" ng-repeat="stack in klondike.foundations track by $index" index="{{$index}}">
         <span class="playing-card"  ng-class="cardClass('foundations', $index, 0)" draggable="true"
-              suit="{{cardSuitFoundationTop($index)}}" rank="{{cardRankFoundationTop($index)}}" card-index="{{cardIndex('foundations', $index, 0)}}"></span>
+              suit="{{cardSuitFoundationTop($index)}}" rank="{{cardRankFoundationTop($index)}}" card-index="{{cardIndex('foundations', $index, -1)}}"></span>
       </div>
     </div>
   </div>
