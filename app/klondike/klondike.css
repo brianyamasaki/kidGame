@@ -84,45 +84,45 @@
     top:0;
     left:0;
 }
-.tableau .playing-card:nth-of-type(2) {
+.tableau .playing-card:nth-of-type(3) {
     top:20px;
 }
-.tableau .playing-card:nth-of-type(3) {
+.tableau .playing-card:nth-of-type(4) {
     top:40px;
 }
-.tableau .playing-card:nth-of-type(4) {
+.tableau .playing-card:nth-of-type(5) {
     top:60px;
 }
-.tableau .playing-card:nth-of-type(5) {
+.tableau .playing-card:nth-of-type(6) {
     top:80px;
 }
-.tableau .playing-card:nth-of-type(6) {
+.tableau .playing-card:nth-of-type(7) {
     top:100px;
 }
-.tableau .playing-card:nth-of-type(7) {
+.tableau .playing-card:nth-of-type(8) {
     top:120px;
 }
-.tableau .playing-card:nth-of-type(8) {
+.tableau .playing-card:nth-of-type(9) {
     top:140px;
 }
-.tableau .playing-card:nth-of-type(9) {
+.tableau .playing-card:nth-of-type(10) {
     top:160px;
 }
-.tableau .playing-card:nth-of-type(10) {
+.tableau .playing-card:nth-of-type(11) {
     top:180px;
 }
-.tableau .playing-card:nth-of-type(11) {
+.tableau .playing-card:nth-of-type(12) {
     top:200px;
 }
-.tableau .playing-card:nth-of-type(12) {
+.tableau .playing-card:nth-of-type(13) {
     top:220px;
 }
-.tableau .playing-card:nth-of-type(13) {
+.tableau .playing-card:nth-of-type(14) {
     top:240px;
 }
-.tableau .playing-card:nth-of-type(14) {
+.tableau .playing-card:nth-of-type(15) {
     top:260px;
 }
-.tableau .playing-card:nth-of-type(15) {
+.tableau .playing-card:nth-of-type(16) {
     top:280px;
 }

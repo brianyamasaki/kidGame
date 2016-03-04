@@ -69,6 +69,7 @@ angular.module('myApp.klondike', ['ngRoute'])
       templateUrl: 'klondike/klondike-directive.html',
       link: function (scope, el, attrs) {
 
+        scope.discardShowCount = 3;
         scope.showAllCards = false;
         scope.clickShowAllCards = function () {
           //scope.$apply();
@@ -226,11 +227,11 @@ angular.module('myApp.klondike', ['ngRoute'])
         function updateDiscardDisplay() {
           var discard = scope.klondike.discard;
 
-          discard.displayCards = discard.cards.slice(-3);
+          discard.displayCards = discard.cards.slice(-scope.discardShowCount);
           discard.displayCards.forEach(function(card) {
             cardFaceUp(card);
           });
-          while (discard.displayCards.length < 3) {
+          while (discard.displayCards.length < scope.discardShowCount) {
             discard.displayCards.unshift({});
           }
         }
@@ -323,8 +324,8 @@ angular.module('myApp.klondike', ['ngRoute'])
 
         function onDragStart(e) {
           var dataTransfer = e.originalEvent.dataTransfer,
+            foundation,
             $target = $(e.target);
-          $target.css('opacity', '0.4');
           dataTransfer.effectAllowed = 'move';
           draggedCard = {
             strStack: getStrStackFromClasses($target.parent().attr('class')),
@@ -333,6 +334,9 @@ angular.module('myApp.klondike', ['ngRoute'])
             rank: $target.attr('rank'),
             cardIndex: parseInt($target.attr('card-index'),10)
           };
+          // designate cards that are moving
+          $target.add($target.nextAll('.playing-card')).css('opacity', '0.4');
+
           dataTransfer.setData('application/text', 'playing-card:' + draggedCard.rank + ':' + draggedCard.suit + ':' + draggedCard.class);
           droppableStacks();
           //console.log('dragstart ' + JSON.stringify(draggedCard));
@@ -473,8 +477,8 @@ angular.module('myApp.klondike', ['ngRoute'])
 
           setupUndo();
           if (hand.cards.length > 0) {
-            //moveCards(hand.cards, discard.cards, Math.max(0, hand.cards.length - 3));
-            c = Math.min(hand.cards.length, 3);
+            //moveCards(hand.cards, discard.cards, Math.max(0, hand.cards.length - scope.discardShowCount));
+            c = Math.min(hand.cards.length, scope.discardShowCount);
             for(var i=0; i < c; i++) {
               card = hand.cards.pop();
               discard.cards.push(card);

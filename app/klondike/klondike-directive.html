@@ -30,6 +30,7 @@
   </div>
   <div class="tableau-area">
     <div class="tableau" ng-repeat="stack in klondike.tableaus track by $index" index="{{$index}}">
+      <span class="playing-card empty" ng-show="stack.cards.length == 0"></span>
       <span class="playing-card" ng-class="cardClass('tableaus', $parent.$index, $index)" ng-repeat="card in stack.cards"
             suit="{{cardSuitTableau($parent.$index, $index)}}"
             rank="{{cardRankTableau($parent.$index, $index)}}"
