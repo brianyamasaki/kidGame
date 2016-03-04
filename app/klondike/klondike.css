@@ -29,6 +29,23 @@
     padding: 5px;
     float:left;
 }
+
+.klondike .discard {
+    position:relative;
+    height:120px;
+}
+
+.klondike .discard .playing-card {
+    position: absolute;
+    top:0;
+    left:0;
+}
+.klondike .discard .playing-card:nth-of-type(2) {
+    left:20px;
+}
+.klondike .discard .playing-card:nth-of-type(3) {
+    left:40px;
+}
 .klondike .foundation-area {
     padding:5px;
     min-width: 380px;

@@ -23,7 +23,6 @@ angular.module('myApp.klondike', ['ngRoute'])
         foundations:[],
         tableaus:[]
       },
-
       dragOverClassname = 'over',
       icardDeal,
       draggedCard,
@@ -88,6 +87,8 @@ angular.module('myApp.klondike', ['ngRoute'])
             }
             cards = cardStack(str)[index].cards;
             index = cardIndex;
+          } else if (str === 'displayDiscard') {
+            cards = scope.klondike.discard.displayCards;
           } else {
             cards = cardStack(str).cards;
           }
@@ -104,7 +105,7 @@ angular.module('myApp.klondike', ['ngRoute'])
         scope.cardIndex = function(str, index, index2) {
           var card = findCard(str, index, index2);
 
-          if (card) {
+          if (card && card.cardIndex) {
             return card.cardIndex;
           }
           return '';
@@ -113,7 +114,7 @@ angular.module('myApp.klondike', ['ngRoute'])
         scope.cardClass = function(str, index, index2) {
           var card = findCard(str, index, index2);
 
-          if (card === undefined) {
+          if (card === undefined || !card.suit) {
             return 'empty';
           } else if (!card.faceUp && !scope.showAllCards) {
             return 'card-back';
@@ -145,14 +146,14 @@ angular.module('myApp.klondike', ['ngRoute'])
           }
         };
 
-        function cardDiscardTop() {
-          var cards = scope.klondike.discard.cards,
+        function cardDisplayDiscard(index) {
+          var cards = scope.klondike.discard.displayCards,
             cardsLength = cards.length;
-            return cardsLength ? cards[cardsLength-1] : undefined;
+            return cardsLength ? cards[index] : undefined;
         }
 
-        scope.cardSuitDiscardTop = function() {
-          var card = cardDiscardTop();
+        scope.cardSuitDisplayDiscard = function(index) {
+          var card = cardDisplayDiscard(index);
 
           if (card) {
             return card.suit;
@@ -161,8 +162,8 @@ angular.module('myApp.klondike', ['ngRoute'])
           }
         };
 
-        scope.cardRankDiscardTop = function() {
-          var card = cardDiscardTop();
+        scope.cardRankDisplayDiscard = function(index) {
+          var card = cardDisplayDiscard(index);
 
           if (card) {
             return card.rank;
@@ -202,6 +203,10 @@ angular.module('myApp.klondike', ['ngRoute'])
           var i,
             klondike = scope.klondike = angular.copy(klondikeBase);
 
+          // modify discard stack to have a display array
+          klondike.discard.displayCards = [];
+          updateDiscardDisplay();
+
           for (i=0; i < 4; i++) {
             klondike.foundations.push(angular.copy(stackBase));
           }
@@ -215,12 +220,25 @@ angular.module('myApp.klondike', ['ngRoute'])
 
           icardDeal = 0;
           dealCards();
+          scope.undoStates = [];
         };
 
-        scope.draggableDiscard = function() {
-          var cards = scope.klondike.discard.cards;
+        function updateDiscardDisplay() {
+          var discard = scope.klondike.discard;
 
-          return cards.length > 0 ? 'true' : 'false';
+          discard.displayCards = discard.cards.slice(-3);
+          discard.displayCards.forEach(function(card) {
+            cardFaceUp(card);
+          });
+          while (discard.displayCards.length < 3) {
+            discard.displayCards.unshift({});
+          }
+        }
+
+        scope.draggableDisplayDiscard = function(index) {
+          var cards = scope.klondike.discard.displayCards;
+
+          return (index == 2 && cards[index].suit) ? 'true' : 'false';
         };
 
         scope.draggableTableau = function(itab, icard) {
@@ -258,6 +276,9 @@ angular.module('myApp.klondike', ['ngRoute'])
           });
         }
         function getStrStackFromClasses(strClass) {
+          if (!strClass) {
+            return;
+          }
           if (strClass.indexOf('foundation') !== -1) {
             return 'foundations';
           } else if (strClass.indexOf('tableau') !== -1) {
@@ -283,7 +304,7 @@ angular.module('myApp.klondike', ['ngRoute'])
             } else {
               stack = cardStack(stackType);
             }
-          } else if (strTargetClasses.indexOf('playing-card') !== -1) {
+          } else if (strTargetClasses && strTargetClasses.indexOf('playing-card') !== -1) {
             $stack = $target.parent();
             stackType = getStrStackFromClasses($stack.attr('class'));
             if (isStackArray[stackType]) {
@@ -365,17 +386,15 @@ angular.module('myApp.klondike', ['ngRoute'])
           el.find('[draggable="true"]').css('opacity', '1');
           el.find('.' + dragOverClassname).removeClass(dragOverClassname);
           if (draggedCard) {
-            moveCards(draggedCard, dropStack);
+            moveDraggedCards(draggedCard, dropStack);
             draggedCard = undefined;
           }
           //console.log('OnDragEnd ' + $(this).attr('class'));
         }
 
-        function moveCards(draggedCard, toStack) {
+        function moveDraggedCards(draggedCard, toStack) {
           var cardIndex,
-            fromStack,
-            fromCards,
-            toCards;
+            fromStack;
 
           if (draggedCard && toStack && toStack.droppable) {
             if (isStackArray[draggedCard.strStack]) {
@@ -383,19 +402,27 @@ angular.module('myApp.klondike', ['ngRoute'])
             } else {
               fromStack = cardStack(draggedCard.strStack);
             }
-            fromCards = fromStack.cards ? fromStack.cards : fromStack;
-            cardIndex = fromCards.findIndex(function(card) {
+            cardIndex = fromStack.cards.findIndex(function(card) {
               return card.cardIndex === draggedCard.cardIndex;
             });
-            toCards = toStack.cards ? toStack.cards : toStack;
-            fromCards.splice(cardIndex, fromCards.length - cardIndex).forEach(function(card) {
-              toCards.push(card);
-            });
-            if (fromCards.length > 0) {
-              cardFaceUp(fromCards[fromCards.length - 1]);
+
+            moveCards(fromStack.cards, toStack.cards, cardIndex);
+            if (fromStack.cards.length > 0) {
+              cardFaceUp(fromStack.cards[fromStack.cards.length - 1]);
             }
-            scope.$apply();
+            if (draggedCard.strStack.indexOf('discard') !== -1) {
+              updateDiscardDisplay();
+            }
           }
+        }
+
+        function moveCards(fromCards, toCards, cardIndex) {
+          setupUndo();
+          fromCards.splice(cardIndex, fromCards.length - cardIndex).forEach(function(card) {
+            toCards.push(card);
+          });
+          scope.$applyAsync();
+
         }
 
         function cardFaceUp(card) {
@@ -436,22 +463,114 @@ angular.module('myApp.klondike', ['ngRoute'])
           $interval(dealCard, 30, dealTableau.length);
         }
 
+
         scope.onClickHand = function() {
           var hand = scope.klondike.hand,
             discard = scope.klondike.discard,
-            card = hand.cards.pop();
+            i,
+            c,
+            card;
 
-          if (card) {
-            card.faceUp = true;
-            discard.cards.push(card);
-            cardFaceUp(card);
+          setupUndo();
+          if (hand.cards.length > 0) {
+            //moveCards(hand.cards, discard.cards, Math.max(0, hand.cards.length - 3));
+            c = Math.min(hand.cards.length, 3);
+            for(var i=0; i < c; i++) {
+              card = hand.cards.pop();
+              discard.cards.push(card);
+            }
           } else {
             scope.klondike.hand.cards = discard.cards.reverse().map(function(card) {card.faceUp = false; return card;});
             scope.klondike.discard.cards = [];
           }
+          updateDiscardDisplay();
+        };
+
+        function doubleClickableCard(card) {
+          var foundationIndexForSuit,
+            foundations = scope.klondike.foundations,
+            foundationCards;
+
+          foundationIndexForSuit = foundations.findIndex(function(foundation) {
+            return foundation.cards.length > 0 && foundation.cards[0].suit === card.suit;
+          });
+          if (foundationIndexForSuit === -1) {
+            foundationIndexForSuit = foundations.findIndex(function(foundation) {
+              return foundation.cards.length === 0;
+            });
+          }
+          foundationCards = foundations[foundationIndexForSuit].cards;
+          if (foundationIndexForSuit !== -1 &&
+            (card.rank === 'ace' ||
+            foundationCards[foundationCards.length - 1].value === card.value - 1)) {
+            return foundationCards;
+          }
+        }
+
+        scope.onDblClickDiscard = function(cardIndex) {
+          var discardCards = scope.klondike.discard.cards,
+            displayCards = scope.klondike.discard.displayCards,
+            foundationCards;
+          if (cardIndex === 2 && discardCards.length > 0) {
+            foundationCards = doubleClickableCard(displayCards[cardIndex]);
+            if (foundationCards) {
+              moveCards(discardCards, foundationCards, discardCards.length-1);
+              updateDiscardDisplay();
+            }
+          }
+        };
+
+        scope.onDblClickTableau = function(tableauIndex, cardIndex) {
+          var tableau = scope.klondike.tableaus[tableauIndex],
+            foundations = scope.klondike.foundations,
+            foundationIndexForSuit,
+            foundationCards,
+            clickedCard;
+          if (tableau.cards.length - 1 === cardIndex) {
+            clickedCard = tableau.cards[cardIndex];
+            foundationCards = doubleClickableCard(clickedCard);
+
+            if (foundationCards) {
+              moveCards(tableau.cards, foundationCards, tableau.cards.length-1);
+              if (tableau.cards.length > 0) {
+                cardFaceUp(tableau.cards[tableau.cards.length - 1]);
+              }
+            }
+          }
+        };
+
+
+        function setupUndo() {
+          scope.undoStates.push(angular.copy(scope.klondike));
+        }
+
+        scope.undo = function () {
+          scope.klondike = scope.undoStates.pop();
+        };
+
+        scope.checkDeck = function() {
+          var deck;
+
+          deck = scope.klondike.hand.cards.concat(scope.klondike.discard.cards)
+
+            .concat(scope.klondike.foundations.map(function(stack) {
+              return stack.cards;
+            }).concatAll())
+            .concat(scope.klondike.tableaus.map(function(stack) {
+              return stack.cards;
+            }).concatAll());
+          CardDeckService.testDeck(deck);
+
+        };
+
+        scope.debugDisplayHand = function() {
+          scope.klondike.hand.cards.forEach(function(card, index) {
+            console.log('card ' + index + ': ' + card.cardIndex);
+          });
         };
 
         scope.startGame();
       }
+
     };
   }]);

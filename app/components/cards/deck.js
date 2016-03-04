@@ -28,10 +28,31 @@ angular.module('myApp.cardDeckService', [])
     };
   }
 
-  function testDeck() {
-    deck.forEach(function(card) {
-      if (!card || !validCard(card)) {
-        console.error('invalid card');
+  function testDeck(inDeck) {
+    var check = [];
+
+    if (!inDeck) {
+      inDeck = deck;
+    }
+    inDeck.forEach(function(card) {
+      if (card) {
+        validCard(card);
+      } else {
+        console.error('missing card');
+      }
+    });
+    inDeck.map(function(card) {
+      return card.cardIndex;
+    }).forEach(function(val) {
+      if (!check[val]) {
+        check[val] = 1;
+      } else {
+        check[val] += 1;
+      }
+    });
+    check.forEach(function(val) {
+      if (val != 1) {
+        console.error('card ' + JSON.stringify(cardInfoFromIndex(val)) + 'had count of ' + !val ? '0' : checks[val]);
       }
     });
   }
@@ -41,29 +62,13 @@ angular.module('myApp.cardDeckService', [])
   }
 
   function validCard(card) {
-    switch(card.suit) {
-      case 'spade':
-      case 'heart':
-      case 'club':
-      case 'diamond':
-        break;
-      default:
-        invalidCardWarning(card);
-        return false;
-    }
-    if (card.color !== 'red' && card.color !== 'black') {
-      invalidCardWarning(card);
-      return false;
-    }
-    if (typeof card.cardIndex !== 'number' || card.cardIndex < 0) {
-      invalidCardWarning(card);
-      return false;
-    }
-    if (typeof card.value !== 'number' || card.value < 1 || card.value > 13) {
-      invalidCardWarning(card);
-      return false;
-    }
-    if (typeof card.faceChar !== 'string' || faceChars.indexOf(card.faceChar) === -1) {
+    var cardT = cardInfoFromIndex(card.cardIndex);
+    if (card.suit !== cardT.suit ||
+      card.color !== cardT.color ||
+      card.value !== cardT.value ||
+      card.valueAceHigh !== cardT.valueAceHigh ||
+      card.faceChar !== cardT.faceChar ||
+      card.rank !== cardT.rank) {
       invalidCardWarning(card);
       return false;
     }
@@ -113,8 +118,8 @@ angular.module('myApp.cardDeckService', [])
       cards.splice(0, count);
       return deck;
     },
-    testDeck: function() {
-      testDeck();
+    testDeck: function(deck) {
+      testDeck(deck);
     },
     testHand: function(hand) {
       hand.forEach(function(card) {

@@ -1,13 +1,24 @@
 <div class="klondike">
-  <p><input id="show-all-cards" type="checkbox" ng-model="showAllCards" ng-click="clickShowAllCards()"><label for="show-all-cards">Show Tableau Cards</label></p>
+  <div>
+    <input id="show-all-cards" type="checkbox" ng-model="showAllCards" ng-click="clickShowAllCards()"><label for="show-all-cards">Show Tableau Cards</label>
+    <button class="btn btn-primary" ng-click="startGame()">New Game</button>
+    <button class="btn btn-primary" ng-click="undo()" ng-disabled="undoStates.length === 0">Undo</button>
+    <button class="btn btn-secondary" ng-click="checkDeck()">Check Deck</button>
+    <button class="btn btn-secondary" ng-click="debugDisplayHand()">Display Hand</button>
+  </div>
   <div class="decks">
     <div class="stock">
       <div class="hand">
         <span class="playing-card" ng-class="cardClass('hand', -1)" ng-click="onClickHand()" card-index="{{cardIndex('hand', -1)}}"></span>
       </div>
       <div class="discard">
-        <span class="playing-card" ng-class="cardClass('discard', -1)" draggable={{draggableDiscard()}}
-              suit="{{cardSuitDiscardTop()}}" rank="{{cardRankDiscardTop()}}" card-index="{{cardIndex('discard', -1)}}"></span>
+        <span class="playing-card" ng-repeat="card in klondike.discard.displayCards"
+              ng-class="cardClass('displayDiscard', $index)"
+              ng-dblclick="onDblClickDiscard($index)"
+              draggable={{draggableDisplayDiscard($index)}}
+              suit="{{cardSuitDisplayDiscard($index)}}"
+              rank="{{cardRankDisplayDiscard($index)}}"
+              card-index="{{cardIndex('displayDiscard', $index)}}"></span>
       </div>
     </div>
     <div class="foundation-area">
@@ -23,7 +34,8 @@
             suit="{{cardSuitTableau($parent.$index, $index)}}"
             rank="{{cardRankTableau($parent.$index, $index)}}"
             card-index="{{cardIndex('tableaus', $parent.$index, $index)}}"
-            draggable="{{draggableTableau($parent.$index, $index)}}"></span>
+            draggable="{{draggableTableau($parent.$index, $index)}}"
+            ng-dblclick="onDblClickTableau($parent.$index, $index)"></span>
     </div>
 
   </div>
