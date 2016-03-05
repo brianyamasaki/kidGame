@@ -1,10 +1,11 @@
 <div class="klondike">
-  <div>
-    <input id="show-all-cards" type="checkbox" ng-model="showAllCards" ng-click="clickShowAllCards()"><label for="show-all-cards">Show Tableau Cards</label>
+  <div class="text-center">
+    <span ng-hide="true">
+      <input id="show-all-cards" type="checkbox" ng-model="showAllCards" ng-click="clickShowAllCards()"><label for="show-all-cards">Show Tableau Cards</label>
+    </span>
     <button class="btn btn-primary" ng-click="startGame()">New Game</button>
     <button class="btn btn-primary" ng-click="undo()" ng-disabled="undoStates.length === 0">Undo</button>
-    <button class="btn btn-secondary" ng-click="checkDeck()">Check Deck</button>
-    <button class="btn btn-secondary" ng-click="debugDisplayHand()">Display Hand</button>
+    <button class="btn btn-secondary" ng-click="checkDeck()" ng-hide="true">Check Deck</button>
   </div>
   <div class="decks">
     <div class="stock">

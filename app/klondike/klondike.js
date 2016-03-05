@@ -106,7 +106,7 @@ angular.module('myApp.klondike', ['ngRoute'])
         scope.cardIndex = function(str, index, index2) {
           var card = findCard(str, index, index2);
 
-          if (card && card.cardIndex) {
+          if (card && card.cardIndex !== undefined) {
             return card.cardIndex;
           }
           return '';
@@ -318,6 +318,7 @@ angular.module('myApp.klondike', ['ngRoute'])
           return {
             stack: stack,
             $stack: $stack,
+            card: stack && stack.cards.length ? stack.cards[stack.cards.length-1] : undefined,
             stackType: stackType
           }
         }
@@ -356,6 +357,9 @@ angular.module('myApp.klondike', ['ngRoute'])
           targetInfo = dropTargetInfo($target);
           if (targetInfo.stack && targetInfo.stack.droppable) {
             targetInfo.$stack.addClass(dragOverClassname);
+            if (targetInfo.card) {
+              targetInfo.$stack.find('[card-index="' + targetInfo.card.cardIndex + '"]').addClass(dragOverClassname);
+            }
             //console.log('onDragEnter ' + targetInfo.stackType);
           }
         }

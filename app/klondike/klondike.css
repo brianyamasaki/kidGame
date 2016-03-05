@@ -6,6 +6,10 @@
     background-size: 1500%;
 }
 
+.klondike .playing-card.over {
+    background-color: #bbb;
+}
+
 .klondike .playing-card[draggable="true"] {
     cursor:move;
 }

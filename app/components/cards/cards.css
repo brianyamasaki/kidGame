@@ -4,21 +4,21 @@
     height:200px;
     width:145px;
     background-repeat: no-repeat;
-    background-size: 2200px;
+    background-size: 2150px;
     background-color:white;
     display:inline-block;
 }
 .playing-card[suit="spade"] {
-    background-image:url("img/spades.jpg");
+    background-image:url("img/spades2.png");
 }
 .playing-card[suit="heart"] {
-    background-image:url("img/hearts.jpg");
+    background-image:url("img/hearts2.png");
 }
 .playing-card[suit="diamond"] {
-    background-image:url("img/diamonds.jpg");
+    background-image:url("img/diamonds2.png");
 }
 .playing-card[suit="club"] {
-    background-image:url("img/clubs.jpg");
+    background-image:url("img/clubs2.png");
 }
 .playing-card[suit="back"],
 .playing-card.card-back {
@@ -29,44 +29,44 @@
     background-position: left center;
 }
 .playing-card[rank="two"] {
-    background-position: 8.2% center;
+    background-position: 8.3% center;
 }
 .playing-card[rank="three"] {
-    background-position: 16.4% center;
+    background-position: 16.6% center;
 }
 .playing-card[rank="four"] {
-    background-position: 24.6% center;
+    background-position: 24.9% center;
 }
 .playing-card[rank="five"] {
-    background-position: 32.8% center;
+    background-position: 33.3% center;
 }
 .playing-card[rank="six"] {
-    background-position: 41% center;
+    background-position: 41.6% center;
 }
 .playing-card[rank="seven"] {
-    background-position: 49.2% center;
+    background-position: 50% center;
 }
 .playing-card[rank="eight"] {
-    background-position: 57.4% center;
+    background-position: 58.3% center;
 }
 .playing-card[rank="nine"] {
-    background-position: 65.6% center;
+    background-position: 66.7% center;
 }
 .playing-card[rank="ten"] {
-    background-position: 73.8% center;
+    background-position: 75% center;
 }
 .playing-card[rank="jack"] {
-    background-position: 82% center;
+    background-position: 83.3% center;
 }
 .playing-card[rank="queen"] {
-    background-position: 90.2% center;
+    background-position: 91.7% center;
 }
 .playing-card[rank="king"] {
-    background-position: 98.45% center;
+    background-position: right center;
 }
 
 .playing-card[rank="joker"] {
-    background-image:url("img/jokers.jpg");
+    background-image:url("img/jokers2.png");
     background-position: left center;
 }
 .playing-card[rank="empty"],
