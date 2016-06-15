@@ -12,6 +12,66 @@ angular.module('myApp.tanks', ['ngRoute'])
   .controller('TanksCtrl', [function() {
 
   }])
+  .factory('AlienService', ['ProjectileService', function(projectileService) {
+    var gameRect = {},
+      dtAlien = 5000,
+      alienRadius = 10,
+      tNextAlien = new Date().getTime() + dtAlien,
+      aliens = [];
+
+    return {
+      initialize: function (dx, dy) {
+        gameRect.dx = dx;
+        gameRect.dy = dy;
+      },
+      physics: function(dt) {
+        var now = new Date().getTime(),
+            projectiles = projectileService.get();
+
+        if (tNextAlien < now) {
+          tNextAlien += dtAlien;
+          aliens.push({
+            x: 0,
+            y: gameRect.dy / 3,
+            dx: 80,
+            dy: 0,
+            radius: alienRadius
+          });
+        }
+        aliens = aliens.filter(function(alien) {
+          var collision = false;
+
+          projectiles.forEach(function(projectile) {
+            if (Math.pow(projectile.x - alien.x, 2) + Math.pow(projectile.y - alien.y, 2) < alienRadius * alienRadius) {
+              collision = true;
+              projectile.destroyed = true;
+            }
+          });
+
+          if (collision) {
+            return false;
+          } else {
+            alien.x += alien.dx * dt;
+            alien.y += alien.dy * dt;
+            return true;
+          }
+        });
+
+      },
+      draw: function(ctx) {
+        var lineWidth = ctx.lineWidth;
+        aliens.forEach(function(alien) {
+          ctx.strokeStyle = 'blue';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(alien.x, alien.y, alienRadius, 0, 6.28);
+          ctx.closePath();
+          ctx.stroke();
+        });
+        ctx.lineWidth = lineWidth;
+      }
+    };
+  }])
   .factory('ProjectileService', [function () {
     var projectiles = [],
       speed = 500;
@@ -33,7 +93,7 @@ angular.module('myApp.tanks', ['ngRoute'])
       physics: function(dt) {
         var now = new Date().getTime();
         projectiles = projectiles.filter(function(projectile) {
-          if (now > projectile.tDie) {
+          if (now > projectile.tDie || projectile.destroyed) {
             return false;
           }
           projectile.x += projectile.dx * dt;
@@ -49,6 +109,9 @@ angular.module('myApp.tanks', ['ngRoute'])
           ctx.closePath();
           ctx.fill();
         });
+      },
+      get: function() {
+        return projectiles;
       }
     };
   }])
@@ -170,8 +233,8 @@ angular.module('myApp.tanks', ['ngRoute'])
       }
     }
   }])
-  .directive('tanksDirective', ['$window', 'ProjectileService', 'PlayerTankService', 'MouseService',
-    function(window, projectileService, playerTankService, mouseService) {
+  .directive('tanksDirective', ['$window', 'ProjectileService', 'PlayerTankService', 'MouseService', 'AlienService',
+    function(window, projectileService, playerTankService, mouseService, alienService) {
     return {
       restrict: 'E',
       replace: true,
@@ -219,6 +282,7 @@ angular.module('myApp.tanks', ['ngRoute'])
           playerTankService.physics(dt);
           playerTankService.aimToMouse();
           projectileService.physics(dt);
+          alienService.physics(dt);
         }
 
         function drawFrame(dt) {
@@ -234,6 +298,7 @@ angular.module('myApp.tanks', ['ngRoute'])
           drawScore(dt);
           playerTankService.draw(ctx);
           projectileService.draw(ctx);
+          alienService.draw(ctx);
           mouseService.draw(ctx);
         }
 
@@ -261,34 +326,29 @@ angular.module('myApp.tanks', ['ngRoute'])
 
         canvasOffset = element.offset();
         playerTankService.createTank(ctxWidth / 2, ctxHeight / 2, 0);
+        alienService.initialize(ctxWidth, ctxHeight);
         startClock();
 
         window.addEventListener('keyup', function(event) {
-          switch(event.key) {
-            case 'w':
-            case 's':
+          // Safari doesn't support event.key AND keyup for a lower case s gives the keyCode for the upper case S
+          if (event.key === 'w' || event.key === 's' ||
+            event.keyCode === 87 || event.keyCode === 83) {
               playerTankService.stop();
-              break;
-          }
+            }
         });
         window.addEventListener('keypress', function(event) {
           var dx, dy, distance;
-          switch (event.key) {
-            case 'w':
-              playerTankService.moveForward();
-              break;
-            case 's':
-              playerTankService.moveBackward();
-              break;
-            case 'a':
-              playerTankService.rotateLeft();
-              break;
-            case 'd':
-              playerTankService.rotateRight();
-              break;
-            case ' ':
-              playerTankService.fireProjectileToMouse();
-              break;
+          // Safari doesn't support event.key
+          if (event.key === 'w' || event.keyCode === 119) {
+              playerTankService.moveForward();              
+          } else if (event.key === 's' || event.keyCode === 115) {
+            playerTankService.moveBackward();
+          } else if (event.key === 'a' || event.keyCode === 97) {
+            playerTankService.rotateLeft();
+          } else if (event.key === 'd' || event.keyCode === 100) {
+            playerTankService.rotateRight();
+          } else if (event.key === ' ' || event.keyCode === 32) {
+            playerTankService.fireProjectileToMouse();
           }
         });
 

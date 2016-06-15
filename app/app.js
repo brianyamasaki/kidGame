@@ -8,7 +8,8 @@ angular.module('myApp', [
   'myApp.cardDeckService',
   'myApp.war',
   'myApp.klondike',
-  'myApp.tanks'
+  'myApp.tanks',
+  'myApp.missileCommand'
 ]).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/home'});
