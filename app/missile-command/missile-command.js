@@ -281,6 +281,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
             explosionService.create(projectile.x, projectile.y);
             return false;
           } else if (groundService.pointInGround({x: projectile.x, y: projectile.y})){
+            explosionService.create(projectile.x, projectile.y);
             return false;
           }
           projectile.x += projectile.dx * dt;
