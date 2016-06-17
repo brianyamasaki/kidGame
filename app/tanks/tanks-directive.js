@@ -29,7 +29,7 @@ angular.module('myApp.tanks', ['ngRoute'])
             projectiles = projectileService.get();
 
         if (tNextAlien < now) {
-          tNextAlien += dtAlien;
+          tNextAlien = now + dtAlien;
           aliens.push({
             x: 0,
             y: gameRect.dy / 3,

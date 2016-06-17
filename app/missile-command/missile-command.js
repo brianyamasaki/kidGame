@@ -12,7 +12,65 @@ angular.module('myApp.missileCommand', ['ngRoute'])
   .controller('MissileCommandCtrl', [function() {
 
   }])
-  .factory('EnemyMissileService', ['ScoringService', function(scoringService) {
+  .factory('UtilService', [function() {
+    function _doLinesIntersect(p1, p2, p3, p4) {
+      // see http://www-cs.ccny.cuny.edu/~wolberg/capstone/intersection/Intersection%20point%20of%20two%20lines.html
+      var a = p4.x - p3.x,
+        b = p1.y - p3.y,
+        c = p4.y - p3.y,
+        d = p1.x - p3.x,
+        e = p2.x - p1.x,
+        f = p2.y - p1.y,
+        g = p1.y - p3.y,
+        denom = c * e - a * f,
+        ua,
+        ub;
+
+      if (denom < 0.000001) {
+        return false;
+      }
+      ua = (a * b - c * d) / denom;
+      ub = (e * g - e * a) / denom;
+      if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return {
+      distance: function(dx, dy) {
+        return Math.sqrt(dx * dx + dy * dy);
+      },
+      isWithin: function(dx, dy, distance) {
+        return dx * dx + dy * dy < distance * distance;
+      },
+      doLinesIntersect: function(p1, p2, p3, p4) {
+        return _doLinesIntersect(p1, p2, p3, p4);
+      },
+      isPointInPolygon: function(p1, polyp) {
+        // ray-casting algorithm based on
+        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+        var x = p1.x,
+          y = p1.y;
+        var inside = false;
+
+        for (var i = 0, j = polyp.length - 1; i < polyp.length; j = i++) {
+          var xi = polyp[i].x,
+            yi = polyp[i].y,
+            xj = polyp[j].x,
+            yj = polyp[j].y;
+
+          var intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+
+        return inside;
+      }
+    };
+  }])
+  .factory('EnemyMissileService', ['ScoringService', 'GroundService', function(scoringService, groundService) {
     var missiles = [];
     var tCreated;
     var level = 0;
@@ -32,7 +90,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           y: 1
         },
         radius: 4,
-        speed: 40
+        speed: 80
       });
     }
     function startMissiles () {
@@ -61,16 +119,23 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           if (missile.destroyed) {
             scoringService.destroyedMissile(10);
             return false;
+          } else if ( 
+            missile.x < -missile.radius || 
+            missile.x > context.width + missile.radius ||
+            missile.y < -missile.radius || 
+            missile.y > context.height + missile.radius ||
+            groundService.pointInGround({x: missile.x, y: missile.y})) {
+            return false;
           } else {
-            if (!missile.angle) {
-              missile.x = missile.from.x * context.width;
-              missile.y = missile.from.y * context.height;
-              missile.angle = Math.atan2((missile.to.x - missile.from.x) * context.width,
-                (missile.to.y - missile.from.y) * context.height) - Math.PI/2;
-            }
-            missile.x += Math.cos(missile.angle) * missile.speed * dt;
-            missile.y += -Math.sin(missile.angle) * missile.speed * dt;
-            return true;
+              if (!missile.angle) {
+                missile.x = missile.from.x * context.width;
+                missile.y = missile.from.y * context.height;
+                missile.angle = Math.atan2((missile.to.x - missile.from.x) * context.width,
+                    (missile.to.y - missile.from.y) * context.height) - Math.PI/2;
+              }
+              missile.x += Math.cos(missile.angle) * missile.speed * dt;
+              missile.y += -Math.sin(missile.angle) * missile.speed * dt;
+              return true;
           }
         });
       },
@@ -85,7 +150,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     }
   }])
-  .factory('LauncherService', ['MouseService', 'ProjectileService', function(mouseService, projectileService) {
+  .factory('LauncherService', ['MouseService', 'ProjectileService', 'UtilService', function(mouseService, projectileService, utilService) {
     var launchers = [];
     var launcherRadius = 10;
     var launcherBarrelLength = 40;
@@ -111,9 +176,9 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       fireProjectile: function () {
         var mousePos = mouseService.getPos();
         launchers.forEach(function(launcher) {
-          var distance = Math.sqrt(Math.pow(launcher.muzzle.x - mousePos.x, 2) + Math.pow(launcher.muzzle.y - mousePos.y, 2));
 
-          projectileService.create(launcher.muzzle.x, launcher.muzzle.y, launcher.angle, distance);
+          projectileService.create(launcher.muzzle.x, launcher.muzzle.y, launcher.angle,
+            utilService.distance(launcher.muzzle.x - mousePos.x, launcher.muzzle.y - mousePos.y));
         });
       },
       draw: function (ctx) {
@@ -141,7 +206,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
-  .factory('ExplosionService', [ 'EnemyMissileService', function(enemyMissileService) {
+  .factory('ExplosionService', [ 'EnemyMissileService', 'UtilService', function(enemyMissileService, utilService) {
     var explosions = [];
     var options = {
       tLifetime: 1500,
@@ -172,7 +237,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
             explosion.radiusCur = Math.sin(((now - explosion.tCreate) / explosion.tLifetime) * Math.PI) * explosion.radiusMax;
             missiles = enemyMissileService.getMissiles();
             missiles.forEach(function(missile) {
-              if (Math.pow(explosion.x - missile.x, 2) + Math.pow(explosion.y - missile.y, 2) < Math.pow(explosion.radiusCur + missile.radius, 2)) {
+              if (utilService.isWithin(explosion.x - missile.x, explosion.y - missile.y, explosion.radiusCur + missile.radius)) {
                 missile.destroyed = true;
               }
             });
@@ -191,7 +256,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
-  .factory('ProjectileService', ['MouseService', 'ExplosionService', function (mouseService, explosionService) {
+  .factory('ProjectileService', ['MouseService', 'ExplosionService', 'GroundService', function (mouseService, explosionService, groundService) {
     var projectiles = [],
       speed = 500;
     return {
@@ -214,6 +279,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         projectiles = projectiles.filter(function(projectile) {
           if (now > projectile.tDie || projectile.destroyed) {
             explosionService.create(projectile.x, projectile.y);
+            return false;
+          } else if (groundService.pointInGround({x: projectile.x, y: projectile.y})){
             return false;
           }
           projectile.x += projectile.dx * dt;
@@ -280,8 +347,80 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     }
   }])
-  .directive('missileCommand', ['$window', 'ProjectileService', 'LauncherService', 'MouseService', 'ExplosionService', 'EnemyMissileService', 'ScoringService',
-    function(window, projectileService, launcherService, mouseService, explosionService, enemyMissileService, scoringService) {
+  .factory('GroundService', ['UtilService', function(utilService) {
+    var context = { };
+    var grounds;
+    return {
+      create: function (ctxWidth, ctxHeight, level) {
+        context.dx = ctxWidth;
+        context.dy = ctxHeight;
+        grounds = [];
+        grounds = angular.copy(window.gameData[level].grounds);
+        grounds.forEach(function(polygon) {
+          var points = polygon.points,
+            yMin,
+            xMin,
+            yMax,
+            xMax;
+
+          points.forEach(function(point, index) {
+            point.x = point.x * context.dx; 
+            point.y = point.y * context.dy;
+            if (index === 0) {
+              yMin = yMax = point.y;
+              xMin = xMax = point.x;
+            } else {
+              yMin = Math.min(yMin, point.y);
+              yMax = Math.max(yMax, point.y);
+              xMin = Math.min(xMin, point.x);
+              xMax = Math.max(xMax, point.x);
+            }
+          });
+          polygon.bounds = {
+            xMin: xMin,
+            yMin: yMin,
+            xMax: xMax,
+            yMax: yMax
+          }
+        });
+      },
+      pointInGround: function (point) {
+        var inside = false;
+        var polygon;
+        for (var i=0; i < grounds.length; i++) {
+          polygon = grounds[i];
+          if (point.x >= polygon.bounds.xMin &&
+              point.x <= polygon.bounds.xMax && 
+              point.y >= polygon.bounds.yMin &&
+              point.y <= polygon.bounds.yMax) {
+            inside = utilService.isPointInPolygon(point, polygon.points);
+          }
+          if (inside) {
+            break;
+          }
+        }
+        return inside;
+      },
+      draw: function (ctx, level) {
+        grounds.forEach(function(polygon) {
+          ctx.fillStyle = polygon.fillStyle;
+          polygon.points.forEach(function(point, index) {
+            if (index === 0) {
+              ctx.beginPath();
+              ctx.moveTo(point.x, point.y);
+            } else {
+              ctx.lineTo(point.x, point.y);
+            }
+          });
+          ctx.closePath();
+          ctx.fill();
+        });
+
+      }
+    };
+  }])
+  .directive('missileCommand', ['$window', 'ProjectileService', 'LauncherService', 'MouseService', 'ExplosionService', 'EnemyMissileService', 'ScoringService', 'UtilService', 'GroundService',
+    function(window, projectileService, launcherService, mouseService, explosionService, enemyMissileService, scoringService, utilService, groundService) {
     return {
       restrict: 'E',
       replace: true,
@@ -341,7 +480,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           ctx.fillRect(0,0,ctxWidth,ctxHeight);
           ctx.strokeRect(0,0,ctxWidth,ctxHeight);
 
-          drawScore(dt);
+          groundService.draw(ctx, 0);
+          drawScore();
           launcherService.draw(ctx);
           projectileService.draw(ctx);
           explosionService.draw(ctx);
@@ -375,11 +515,11 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           canvasOffset = element.offset();
           launcherService.create(400, 250, 50);
           enemyMissileService.create(ctxWidth, ctxHeight);
+          groundService.create(ctxWidth, ctxHeight, 0);
         }
 
         init();
         startClock();
-
 
         element.on('click', function(event) {
           launcherService.fireProjectile();
