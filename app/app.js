@@ -10,7 +10,7 @@ angular.module('myApp', [
   'myApp.klondike',
   'myApp.tanks',
   'myApp.missileCommand',
-  'myApp.levelDesigner'
+  'myApp.fileInput'
 ]).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/home'});

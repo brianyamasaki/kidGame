@@ -5,6 +5,10 @@
   border: 1px solid black;
 }
 
+.drop-zone.over {
+  background: #aaaaaa;
+}
+
 .inner-drop-zone {
   border: 1px dashed black;
   height: 4em;

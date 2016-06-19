@@ -70,6 +70,54 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
+  .factory('CityService', ['ImageService', function(imageService) {
+    var cityImage,
+      cityImageCenter = {x:0, y:0},
+      cities;
+
+    return {
+      init: function(contextWidth, contextHeight, level) {
+        var levelData = window.gameData[level];
+        if (levelData.cityImage) {
+          imageService.loadImage(levelData.cityImage)
+            .then(function(image) {
+              cityImage = image;
+              if (levelData.cityImageCenter) {
+                cityImageCenter = levelData.cityImageCenter;
+              }
+            })
+            .catch(function() {
+              console.error('city image not loaded');
+            });
+        }
+        if (levelData.cities) {
+          cities = []
+          levelData.cities.forEach(function(city) {
+            cities.push({
+              x: city.x * contextWidth,
+              y: city.y * contextHeight
+            })
+          });
+        }
+      },
+      draw: function(ctx) {
+        if (cityImage) {
+          cities.forEach(function(city) {
+            ctx.save();
+            ctx.translate(city.x, city.y);
+            ctx.rotate(-Math.PI/2);
+            ctx.drawImage(cityImage, cityImageCenter.x, cityImageCenter.y);
+            ctx.restore();
+          });
+        } else {
+          cities.forEach(function(city) {
+            ctx.fillStyle = 'black';
+            ctx.arc(city.x, city.y, 100, Math.PI, Math.PI*2);
+          })
+        }
+      }
+    };
+  }])
   .factory('EnemyMissileService', ['ScoringService', 'GroundService', 'ImageService',
   function(scoringService, groundService, imageService) {
     var missiles = [];
@@ -533,8 +581,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
-  .directive('missileCommand', ['$window', 'ProjectileService', 'LauncherService', 'MouseService', 'ExplosionService', 'EnemyMissileService', 'ScoringService', 'UtilService', 'GroundService',
-    function(window, projectileService, launcherService, mouseService, explosionService, enemyMissileService, scoringService, utilService, groundService) {
+  .directive('missileCommand', ['$window', 'ProjectileService', 'LauncherService', 'MouseService', 'ExplosionService', 'EnemyMissileService', 'ScoringService', 'UtilService', 'GroundService', 'CityService',
+    function(window, projectileService, launcherService, mouseService, explosionService, enemyMissileService, scoringService, utilService, groundService, cityService) {
     return {
       restrict: 'E',
       replace: true,
@@ -557,6 +605,10 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           interval;
 
         ctx = scope.ctx = element[0].getContext('2d');
+
+        scope.$on('fileInputReceived', function(event, jsonObject) {
+            console.log(jsonObject);
+        });
 
         function drawScore(dt) {
           ctx.fillStyle = options.clrRain;
@@ -595,6 +647,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
             drawStartScreen();
           } else {
             groundService.draw(ctx);
+            cityService.draw(ctx);
             drawScore();
             launcherService.draw(ctx);
             projectileService.draw(ctx);
@@ -632,6 +685,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           launcherService.create(ctxWidth, ctxHeight, level);
           enemyMissileService.create(ctxWidth, ctxHeight, level);
           groundService.create(ctxWidth, ctxHeight, level);
+          cityService.init(ctxWidth, ctxHeight, level);
         }
 
         level = 1;
