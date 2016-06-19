@@ -10,7 +10,13 @@ angular.module('myApp.missileCommand', ['ngRoute'])
   }])
 
   .controller('MissileCommandCtrl', ['$scope', function(scope ) {
-    
+    scope.gameState = 'notStarted';
+    scope.isPaused = function() {
+      return scope.gameState == 'paused';
+    }
+    scope.isRunning = function() {
+      return scope.gameState == 'running';
+    }
   }])
   .factory('UtilService', [function() {
     function _doLinesIntersect(p1, p2, p3, p4) {
@@ -422,7 +428,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           dy: dy,
           tDie: now + dtToDistance
         });
-        // console.log('x: ' + x + '  y: ' + y  + '  dx: ' + dx + '  dy: ' + dy + ' dt' + dtToDistance);
+        // console.log(' projectile created x: ' + x + '  y: ' + y  + '  dx: ' + dx + '  dy: ' + dy + ' dt:' + dtToDistance);
       },
       physics: function(dt) {
         var now = new Date().getTime();
@@ -434,6 +440,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
             explosionService.create(projectile.x, projectile.y);
             return false;
           }
+          // console.log('dt: ' + dt + ' Dx: ' + (projectile.dx * dt) + ' Dy: ' + (projectile.dy * dt));
           projectile.x += projectile.dx * dt;
           projectile.y += projectile.dy * dt;
           return true;
@@ -592,7 +599,6 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           ctxWidth = 800,
           ctxHeight = 500,
           options = {
-            fps: 60,  // frames per second
             mouseSize: 40, // radius of mouse circle
             clrBackground: '#ffffff', // color for background
             clrRain: '#000000', // color for rain drop
@@ -601,13 +607,12 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           canvasOffset,
           timeLast,
           isStarted,
-          level,
-          interval;
+          level;
 
         ctx = scope.ctx = element[0].getContext('2d');
 
         scope.$on('fileInputReceived', function(event, jsonObject) {
-            console.log(jsonObject);
+          window.gameData = jsonObject;
         });
 
         function drawScore(dt) {
@@ -620,6 +625,12 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           ctx.fillStyle = "darkred";
           ctx.font = "20pt Helvetica, Arial, sans serif";
           ctx.fillText("Click to Start", ctxWidth/2 - 30, ctxHeight/2);
+        }
+
+        function drawPausedScreen() {
+          ctx.fillStyle = "darkred";
+          ctx.font = "20pt Helvetica, Arial, sans serif";
+          ctx.fillText("Paused - Click to restart", ctxWidth/2 - 140, ctxHeight/2);
         }
 
         function gameOver() {
@@ -636,51 +647,68 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           enemyMissileService.physics(dt);
         }
 
-        function drawFrame(dt) {
-
+        function drawBackground() {
           ctx.fillStyle = options.clrBackground;
           ctx.strokeStyle = options.clrRain;
           ctx.fillRect(0,0,ctxWidth,ctxHeight);
           ctx.strokeRect(0,0,ctxWidth,ctxHeight);
+        }
 
-          if (!isStarted) {
-            drawStartScreen();
-          } else {
-            groundService.draw(ctx);
-            cityService.draw(ctx);
-            drawScore();
-            launcherService.draw(ctx);
-            projectileService.draw(ctx);
-            explosionService.draw(ctx);
-            enemyMissileService.draw(ctx);
-            mouseService.draw(ctx);
+        function drawGameFrame() {
+          groundService.draw(ctx);
+          cityService.draw(ctx);
+          launcherService.draw(ctx);
+          projectileService.draw(ctx);
+          explosionService.draw(ctx);
+          enemyMissileService.draw(ctx);
+          mouseService.draw(ctx);
+        }
+
+        function animate(now) {
+          var dt;
+          drawBackground();
+
+          switch(scope.gameState) {
+            case 'notStarted':
+              drawStartScreen();
+              break;
+            case 'paused': 
+              drawPausedScreen();
+              break;
+            case 'running': 
+              if (timeLast) {
+                dt = (now - timeLast) / 1000;
+              } else {
+                dt = 0;
+              }
+              timeLast = now;  
+              physics(dt);
+              drawGameFrame();
+              break;
           }
+          drawScore();
+
+          window.requestAnimationFrame(animate);
         }
 
-        function startClock() {
-          timeLast = new Date().getTime();
-          interval = setInterval(function() {
-            var nowTime = new Date().getTime(),
-              dt = (nowTime - timeLast) / 1000;
-
-            physics(dt);
-            drawFrame(dt);
-            timeLast = nowTime;
-          }, 1000/options.fps);
+        function startAnimation() {
+          window.requestAnimationFrame(animate);
         }
 
-        function pause() {
-          drawPauseScreen();
-          stopClock();
+        scope.pauseGame =  function() {
+          stopAnimation();
         }
 
-        function stopClock() {
-          clearInterval(interval);
-          interval = undefined;
+        scope.restartGame = function() {
+          scope.gameState = 'running';
         }
 
-        function init() {
-          canvasOffset = element.offset();
+        function stopAnimation() {
+          scope.gameState = 'paused';
+        }
+
+        function initWorld() {
+          level = 1;
           projectileService.init(ctxWidth, ctxHeight, level);
           launcherService.create(ctxWidth, ctxHeight, level);
           enemyMissileService.create(ctxWidth, ctxHeight, level);
@@ -688,14 +716,17 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           cityService.init(ctxWidth, ctxHeight, level);
         }
 
-        level = 1;
+        function init() {
+          canvasOffset = element.offset();
+          initWorld();
+        }
+
         init();
-        startClock();
+        startAnimation();
 
         element.on('click', function(event) {
-          if (!isStarted) {
-            isStarted = true;
-            startClock();
+          if (scope.gameState !== 'running') {
+            scope.gameState = 'running';
           } else {
             launcherService.fireProjectile();   
           }
@@ -711,9 +742,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           element.off('mousemove');
         });
 
-
         scope.$on('$destroy', function (event) {
-          stopClock();
+          scope.gameState = 'paused';
           element.off('click');
           element.off('mouseout');
           element.off('mouseover');
