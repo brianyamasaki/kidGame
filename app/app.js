@@ -9,7 +9,8 @@ angular.module('myApp', [
   'myApp.war',
   'myApp.klondike',
   'myApp.tanks',
-  'myApp.missileCommand'
+  'myApp.missileCommand',
+  'myApp.levelDesigner'
 ]).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/home'});

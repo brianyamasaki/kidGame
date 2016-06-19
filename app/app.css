@@ -1,2 +1,11 @@
 /* app css stylesheet */
+.drop-zone {
+  padding: .5em;
+  height: 5em;
+  border: 1px solid black;
+}
 
+.inner-drop-zone {
+  border: 1px dashed black;
+  height: 4em;
+}

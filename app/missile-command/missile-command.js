@@ -9,8 +9,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
     });
   }])
 
-  .controller('MissileCommandCtrl', [function() {
-
+  .controller('MissileCommandCtrl', ['$scope', function(scope ) {
+    
   }])
   .factory('UtilService', [function() {
     function _doLinesIntersect(p1, p2, p3, p4) {
@@ -70,13 +70,18 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
-  .factory('EnemyMissileService', ['ScoringService', 'GroundService', function(scoringService, groundService) {
+  .factory('EnemyMissileService', ['ScoringService', 'GroundService', 'ImageService',
+  function(scoringService, groundService, imageService) {
     var missiles = [];
     var tCreated;
-    var level = 0;
     var missileInLevel = 0;
     var context = {};
     var interval;
+    var missileImage;
+    var missileImageCenter = {
+      x: 0,
+      y: 0
+    };
 
     function createMissile() {
       missiles.push({
@@ -96,11 +101,25 @@ angular.module('myApp.missileCommand', ['ngRoute'])
     function startMissiles () {
       interval = setInterval(createMissile, 1500);
     }
+
     return {
-      create: function (ctxWidth, ctxHeight) {
+      create: function (ctxWidth, ctxHeight, level) {
+        var levelData = window.gameData[level];
         tCreated = new Date().getTime();
         context.width = ctxWidth;
         context.height = ctxHeight;
+        if (levelData.missileImage) {
+          imageService.loadImage(levelData.missileImage)
+            .then(function(image) {
+              missileImage = image;
+              if (levelData.missileImageCenter) {
+                missileImageCenter = levelData.missileImageCenter;
+              }
+            })
+            .catch(function() {
+              console.error('missile image not loaded');
+            });
+        }
         startMissiles();
       },
       pause: function () {
@@ -127,42 +146,117 @@ angular.module('myApp.missileCommand', ['ngRoute'])
             groundService.pointInGround({x: missile.x, y: missile.y})) {
             return false;
           } else {
-              if (!missile.angle) {
+              if (missile.angle === undefined) {
                 missile.x = missile.from.x * context.width;
                 missile.y = missile.from.y * context.height;
-                missile.angle = Math.atan2((missile.to.x - missile.from.x) * context.width,
-                    (missile.to.y - missile.from.y) * context.height) - Math.PI/2;
+                missile.angle = -(Math.atan2((missile.to.x - missile.from.x) * context.width,
+                    (missile.to.y - missile.from.y) * context.height) - Math.PI/2);
               }
               missile.x += Math.cos(missile.angle) * missile.speed * dt;
-              missile.y += -Math.sin(missile.angle) * missile.speed * dt;
+              missile.y += Math.sin(missile.angle) * missile.speed * dt;
               return true;
           }
         });
       },
       draw: function(ctx) {
-        ctx.fillStyle = 'green';
-        missiles.forEach(function(missile) {
-          ctx.fillRect(missile.x-missile.radius, missile.y-missile.radius, missile.radius*2, missile.radius*2);
-        });
+        if (missileImage) {
+          missiles.forEach(function(missile) {
+            ctx.save();
+
+            ctx.translate(missile.x, missile.y);
+            ctx.rotate(missile.angle);
+            ctx.drawImage(missileImage, missileImageCenter.x, missileImageCenter.y);
+            ctx.restore();
+          });
+
+        } else {
+          ctx.fillStyle = 'green';
+          missiles.forEach(function(missile) {
+            ctx.fillRect(missile.x-missile.radius, missile.y-missile.radius, missile.radius*2, missile.radius*2);
+          });
+        }
       },
       getMissiles: function() {
+        
         return missiles;
       }
     }
   }])
-  .factory('LauncherService', ['MouseService', 'ProjectileService', 'UtilService', function(mouseService, projectileService, utilService) {
+  .factory('ImageService', ['$q', function($q) {
+    var images = [];
+    return {
+      loadImage: function (filepath) {
+        var deferred = $q.defer(),
+          img = new Image(),
+          iImage = images.length;
+        img.onload = function(){
+          images.push({
+            src: filepath,
+            img: img
+          });
+          deferred.resolve(img);
+        };
+        img.src = filepath;
+
+        return deferred.promise;
+      }
+    };
+  }])
+  .factory('LauncherService', ['MouseService', 'ProjectileService', 'UtilService', 'ImageService', 
+  function(mouseService, projectileService, utilService, imageService) {
     var launchers = [];
     var launcherRadius = 10;
     var launcherBarrelLength = 40;
+    var launcherImage;
+    var launcherImageCenter = {x:0, y:0};
+
+    function drawDefaultLaunchers(ctx) {
+      var lineWidth = ctx.lineWidth;
+      var fillStyle = ctx.fillStyle;
+      ctx.lineWidth = 3;
+      ctx.fillStyle = 'black';
+      launchers.forEach(function(launcher) {
+        ctx.beginPath();
+        ctx.arc(launcher.x, launcher.y, launcherRadius, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.fill();
+
+        // draw gun barrel
+        ctx.beginPath();
+        ctx.moveTo(launcher.x, launcher.y);
+        ctx.lineTo(launcher.muzzle.x, launcher.muzzle.y);
+        ctx.closePath();
+        ctx.stroke();
+
+      });
+      ctx.lineWidth = lineWidth;
+      ctx.fillStyle = fillStyle;
+    }
+
     return {
-      create: function(x, y, cMissiles) {
-        launchers.push({
-          x: x,
-          y: y,
-          angle: 0,
-          cMissiles: cMissiles,
-          muzzle: {}
+      create: function(ctxWidth, ctxHeight, level) {
+        var level = window.gameData[level];
+        level.launchers.forEach(function(launcher) {
+          launchers.push({
+            x: launcher.x * ctxWidth,
+            y: launcher.y * ctxHeight,
+            angle: 0,
+            cMissiles: 50,
+            muzzle: {}
+          });
         });
+        if (level.launcherImage) {
+          imageService.loadImage(level.launcherImage)
+            .then(function(image) {
+              launcherImage = image;
+              if (level.launcherImageCenter) {
+                launcherImageCenter = level.launcherImageCenter;
+              }
+            })
+            .catch(function() {
+              console.error('launcher image file ' + level.launcherImage + ' not loaded');
+            })
+        }
       },
       physics: function (dt) {
         var mousePos = mouseService.getPos();
@@ -182,26 +276,18 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         });
       },
       draw: function (ctx) {
-        var lineWidth = ctx.lineWidth;
-        var fillStyle = ctx.fillStyle;
-        ctx.lineWidth = 3;
-        ctx.fillStyle = 'black';
-        launchers.forEach(function(launcher) {
-          ctx.beginPath();
-          ctx.arc(launcher.x, launcher.y, launcherRadius, 0, Math.PI*2);
-          ctx.closePath();
-          ctx.fill();
+        if (!launcherImage) {
+          drawDefaultLaunchers(ctx);
+        } else {
+          launchers.forEach(function(launcher) {
+            ctx.save();
 
-          // draw gun barrel
-          ctx.beginPath();
-          ctx.moveTo(launcher.x, launcher.y);
-          ctx.lineTo(launcher.muzzle.x, launcher.muzzle.y);
-          ctx.closePath();
-          ctx.stroke();
-
-        });
-        ctx.lineWidth = lineWidth;
-        ctx.fillStyle = fillStyle;
+            ctx.translate(launcher.x, launcher.y);
+            ctx.rotate(launcher.angle);
+            ctx.drawImage(launcherImage, launcherImageCenter.x, launcherImageCenter.y);
+            ctx.restore();
+          });
+        }
 
       }
     };
@@ -256,10 +342,25 @@ angular.module('myApp.missileCommand', ['ngRoute'])
       }
     };
   }])
-  .factory('ProjectileService', ['MouseService', 'ExplosionService', 'GroundService', function (mouseService, explosionService, groundService) {
+  .factory('ProjectileService', ['MouseService', 'ExplosionService', 'GroundService', 'ImageService', 
+  function (mouseService, explosionService, groundService, imageService) {
     var projectiles = [],
+      projectileImage,
+      projectileImageCenter = {x:0, y: 0},
       speed = 500;
     return {
+      init: function(contextDx, contextDy, level) {
+        var levelData = window.gameData[level];
+        if (levelData.projectileImage) {
+          imageService.loadImage(levelData.projectileImage)
+            .then(function(image) {
+              projectileImage = image;
+              if (levelData.projectileImageCenter) {
+                projectileImageCenter = levelData.projectileImageCenter;
+              }
+            })
+        }
+      },
       create: function(x, y, angle, distance) {
         var now = new Date().getTime(),
           dx = Math.cos(angle) * speed,
@@ -268,11 +369,12 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         projectiles.push({
           x: x,
           y: y,
+          angle: angle,
           dx: dx,
           dy: dy,
           tDie: now + dtToDistance
         });
-        // console.log('x: ' + x + '  y: ' + y  + '  dx: ' + dx + '  dy: ' + dy);
+        // console.log('x: ' + x + '  y: ' + y  + '  dx: ' + dx + '  dy: ' + dy + ' dt' + dtToDistance);
       },
       physics: function(dt) {
         var now = new Date().getTime();
@@ -290,13 +392,24 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         });
       },
       draw: function(ctx) {
-        projectiles.forEach(function(projectile) {
-          ctx.fillStyle = 'black';
-          ctx.beginPath();
-          ctx.arc(projectile.x, projectile.y, 3, 0, 6.28);
-          ctx.closePath();
-          ctx.fill();
-        });
+        if (projectileImage) {
+          projectiles.forEach(function(projectile) {
+            ctx.save();
+
+            ctx.translate(projectile.x, projectile.y);
+            ctx.rotate(projectile.angle);
+            ctx.drawImage(projectileImage, projectileImageCenter.x, projectileImageCenter.y);
+            ctx.restore();
+          });
+        } else {
+          projectiles.forEach(function(projectile) {
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(projectile.x, projectile.y, 3, 0, 6.28);
+            ctx.closePath();
+            ctx.fill();
+          });
+        }
       },
       get: function() {
         return projectiles;
@@ -402,7 +515,7 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         }
         return inside;
       },
-      draw: function (ctx, level) {
+      draw: function (ctx) {
         grounds.forEach(function(polygon) {
           ctx.fillStyle = polygon.fillStyle;
           polygon.points.forEach(function(point, index) {
@@ -439,6 +552,8 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           },
           canvasOffset,
           timeLast,
+          isStarted,
+          level,
           interval;
 
         ctx = scope.ctx = element[0].getContext('2d');
@@ -449,12 +564,10 @@ angular.module('myApp.missileCommand', ['ngRoute'])
           ctx.fillText(scoringService.getScore().toString(), 20, ctxHeight-20);
         }
 
-        function drawPauseScreen() {
+        function drawStartScreen() {
           ctx.fillStyle = "darkred";
           ctx.font = "20pt Helvetica, Arial, sans serif";
-          ctx.fillText("Paused", ctxWidth/2 - 30, ctxHeight/2);
-          ctx.font = "10pt Helvetica, Arial, san serif";
-          ctx.fillText('Click mouse to continue', ctxWidth/2 - 40, ctxHeight/2 + 20);
+          ctx.fillText("Click to Start", ctxWidth/2 - 30, ctxHeight/2);
         }
 
         function gameOver() {
@@ -472,22 +585,23 @@ angular.module('myApp.missileCommand', ['ngRoute'])
         }
 
         function drawFrame(dt) {
-          var i,
-            fHit,
-            drop;
 
           ctx.fillStyle = options.clrBackground;
           ctx.strokeStyle = options.clrRain;
           ctx.fillRect(0,0,ctxWidth,ctxHeight);
           ctx.strokeRect(0,0,ctxWidth,ctxHeight);
 
-          groundService.draw(ctx, 0);
-          drawScore();
-          launcherService.draw(ctx);
-          projectileService.draw(ctx);
-          explosionService.draw(ctx);
-          enemyMissileService.draw(ctx);
-          mouseService.draw(ctx);
+          if (!isStarted) {
+            drawStartScreen();
+          } else {
+            groundService.draw(ctx);
+            drawScore();
+            launcherService.draw(ctx);
+            projectileService.draw(ctx);
+            explosionService.draw(ctx);
+            enemyMissileService.draw(ctx);
+            mouseService.draw(ctx);
+          }
         }
 
         function startClock() {
@@ -514,16 +628,23 @@ angular.module('myApp.missileCommand', ['ngRoute'])
 
         function init() {
           canvasOffset = element.offset();
-          launcherService.create(400, 250, 50);
-          enemyMissileService.create(ctxWidth, ctxHeight);
-          groundService.create(ctxWidth, ctxHeight, 0);
+          projectileService.init(ctxWidth, ctxHeight, level);
+          launcherService.create(ctxWidth, ctxHeight, level);
+          enemyMissileService.create(ctxWidth, ctxHeight, level);
+          groundService.create(ctxWidth, ctxHeight, level);
         }
 
+        level = 1;
         init();
         startClock();
 
         element.on('click', function(event) {
-          launcherService.fireProjectile();
+          if (!isStarted) {
+            isStarted = true;
+            startClock();
+          } else {
+            launcherService.fireProjectile();   
+          }
         });
 
         element.on('mouseover', function (event) {
